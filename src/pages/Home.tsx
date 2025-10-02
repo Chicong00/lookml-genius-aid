@@ -20,37 +20,37 @@ const Home = () => {
         {/* Mode Selection Cards */}
         <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
           {/* QA Dashboard Card */}
-          <Card className="group relative overflow-hidden border-2 hover:border-primary transition-all duration-300 hover:shadow-lg hover:-translate-y-1 bg-card">
-            <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-5 transition-opacity" />
-            <div className="p-8">
-              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Shield className="w-8 h-8 text-primary" />
-              </div>
-              <h2 className="text-3xl font-bold mb-4">QA Dashboard</h2>
-              <p className="text-muted-foreground mb-8 leading-relaxed">
-                Analyze existing LookML code against best practices. Upload a file or paste a URL to receive comprehensive quality reports with AI-powered suggestions.
-              </p>
-              <Link to="/qa">
+          <Link to="/qa" className="block">
+            <Card className="group relative overflow-hidden border-2 hover:border-primary transition-all duration-300 hover:shadow-lg hover:-translate-y-1 bg-card cursor-pointer h-full">
+              <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-5 transition-opacity" />
+              <div className="p-8">
+                <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <Shield className="w-8 h-8 text-primary" />
+                </div>
+                <h2 className="text-3xl font-bold mb-4">QA Dashboard</h2>
+                <p className="text-muted-foreground mb-8 leading-relaxed">
+                  Analyze existing LookML code against best practices. Upload a file or paste a URL to receive comprehensive quality reports with AI-powered suggestions.
+                </p>
                 <Button size="lg" className="w-full group/btn">
                   Start QA Analysis
                   <ArrowRight className="ml-2 w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
                 </Button>
-              </Link>
-            </div>
-          </Card>
+              </div>
+            </Card>
+          </Link>
 
           {/* Generate Dashboard Card */}
-          <Card className="group relative overflow-hidden border-2 hover:border-accent transition-all duration-300 hover:shadow-lg hover:-translate-y-1 bg-card">
-            <div className="absolute inset-0 bg-gradient-accent opacity-0 group-hover:opacity-5 transition-opacity" />
-            <div className="p-8">
-              <div className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Sparkles className="w-8 h-8 text-accent" />
-              </div>
-              <h2 className="text-3xl font-bold mb-4">Generate Dashboard</h2>
-              <p className="text-muted-foreground mb-8 leading-relaxed">
-                Describe your dashboard in natural language and watch AI transform your requirements into production-ready LookML code and visualizations.
-              </p>
-              <Link to="/generate">
+          <Link to="/generate" className="block">
+            <Card className="group relative overflow-hidden border-2 hover:border-accent transition-all duration-300 hover:shadow-lg hover:-translate-y-1 bg-card cursor-pointer h-full">
+              <div className="absolute inset-0 bg-gradient-accent opacity-0 group-hover:opacity-5 transition-opacity" />
+              <div className="p-8">
+                <div className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <Sparkles className="w-8 h-8 text-accent" />
+                </div>
+                <h2 className="text-3xl font-bold mb-4">Generate Dashboard</h2>
+                <p className="text-muted-foreground mb-8 leading-relaxed">
+                  Describe your dashboard in natural language and watch AI transform your requirements into production-ready LookML code and visualizations.
+                </p>
                 <Button 
                   size="lg" 
                   className="w-full group/btn bg-accent hover:bg-accent/90 text-accent-foreground"
@@ -58,9 +58,9 @@ const Home = () => {
                   Create with AI
                   <ArrowRight className="ml-2 w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
                 </Button>
-              </Link>
-            </div>
-          </Card>
+              </div>
+            </Card>
+          </Link>
         </div>
 
         {/* Feature Highlights */}
