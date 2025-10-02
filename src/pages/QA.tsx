@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link2, Upload, ArrowLeft, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
+import { Link2, Upload, ArrowLeft, CheckCircle2, XCircle, AlertCircle, Sparkles, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import QAReportDialog from "@/components/QAReportDialog";
+import { supabase } from "@/integrations/supabase/client";
 
 const QA = () => {
   const [url, setUrl] = useState("");
@@ -15,7 +17,9 @@ const QA = () => {
   const [code, setCode] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [results, setResults] = useState<any>(null);
-  const [viewingReport, setViewingReport] = useState(false);
+  const [showReportDialog, setShowReportDialog] = useState(false);
+  const [loadingSuggestions, setLoadingSuggestions] = useState<{ [key: number]: boolean }>({});
+  const [suggestions, setSuggestions] = useState<{ [key: number]: string }>({});
   const { toast } = useToast();
 
   const handleAnalyze = async () => {
@@ -63,19 +67,52 @@ const QA = () => {
   };
 
   const handleViewReport = () => {
-    setViewingReport(true);
-    toast({
-      title: "Generating Detailed Report",
-      description: "Preparing comprehensive analysis with recommendations...",
-    });
+    setShowReportDialog(true);
+  };
+
+  const handleGetAISuggestion = async (checkIndex: number, checkName: string, checkMessage: string) => {
+    setLoadingSuggestions(prev => ({ ...prev, [checkIndex]: true }));
     
-    setTimeout(() => {
-      toast({
-        title: "Report Ready",
-        description: "Your detailed QA report is ready for review.",
+    try {
+      const { data, error } = await supabase.functions.invoke('get-qa-fix-suggestion', {
+        body: {
+          checkName,
+          checkMessage,
+          code: code || "Sample LookML code"
+        }
       });
-      setViewingReport(false);
-    }, 2000);
+
+      if (error) throw error;
+
+      const suggestion = data.suggestion || "Unable to generate suggestion at this time.";
+      setSuggestions(prev => ({ ...prev, [checkIndex]: suggestion }));
+      
+      toast({
+        title: "AI Suggestion Ready",
+        description: "Review the suggestion below and apply if needed.",
+      });
+    } catch (error) {
+      console.error('Error getting AI suggestion:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate AI suggestion. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingSuggestions(prev => ({ ...prev, [checkIndex]: false }));
+    }
+  };
+
+  const handleApplySuggestion = (checkIndex: number) => {
+    const suggestion = suggestions[checkIndex];
+    if (suggestion && code) {
+      // Apply the suggestion to the code
+      setCode(prev => `${prev}\n\n// AI Suggested Fix:\n${suggestion}`);
+      toast({
+        title: "Suggestion Applied",
+        description: "The AI suggestion has been added to your code. Review and adjust as needed.",
+      });
+    }
   };
 
   const getStatusIcon = (status: string) => {
@@ -247,12 +284,68 @@ const QA = () => {
                       key={index} 
                       className={`p-4 border ${getStatusColor(check.status)}`}
                     >
-                      <div className="flex items-start gap-3">
-                        {getStatusIcon(check.status)}
-                        <div className="flex-1 min-w-0">
-                          <h4 className={`font-semibold mb-1 ${getStatusTextColor(check.status)}`}>{check.name}</h4>
-                          <p className="text-sm text-muted-foreground">{check.message}</p>
+                      <div className="space-y-3">
+                        <div className="flex items-start gap-3">
+                          {getStatusIcon(check.status)}
+                          <div className="flex-1 min-w-0">
+                            <h4 className={`font-semibold mb-1 ${getStatusTextColor(check.status)}`}>{check.name}</h4>
+                            <p className="text-sm text-muted-foreground">{check.message}</p>
+                          </div>
                         </div>
+                        
+                        {(check.status === "fail" || check.status === "warning") && (
+                          <div className="ml-8 space-y-2">
+                            {!suggestions[index] ? (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleGetAISuggestion(index, check.name, check.message)}
+                                disabled={loadingSuggestions[index]}
+                                className="w-full"
+                              >
+                                {loadingSuggestions[index] ? (
+                                  <>
+                                    <Loader2 className="w-3 h-3 mr-2 animate-spin" />
+                                    Generating AI Suggestion...
+                                  </>
+                                ) : (
+                                  <>
+                                    <Sparkles className="w-3 h-3 mr-2" />
+                                    Get AI Fix Suggestion
+                                  </>
+                                )}
+                              </Button>
+                            ) : (
+                              <div className="space-y-2 p-3 rounded-lg bg-accent/50 border border-accent">
+                                <div className="flex items-start gap-2">
+                                  <Sparkles className="w-4 h-4 text-primary mt-0.5" />
+                                  <div className="flex-1">
+                                    <p className="text-xs font-medium mb-1">AI Suggestion:</p>
+                                    <p className="text-xs text-muted-foreground">{suggestions[index]}</p>
+                                  </div>
+                                </div>
+                                <div className="flex gap-2">
+                                  <Button
+                                    size="sm"
+                                    variant="default"
+                                    onClick={() => handleApplySuggestion(index)}
+                                    className="flex-1"
+                                  >
+                                    Apply to Code
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleGetAISuggestion(index, check.name, check.message)}
+                                    disabled={loadingSuggestions[index]}
+                                  >
+                                    Regenerate
+                                  </Button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </Card>
                   ))}
@@ -262,15 +355,23 @@ const QA = () => {
                   variant="outline" 
                   className="w-full"
                   onClick={handleViewReport}
-                  disabled={viewingReport}
                 >
-                  {viewingReport ? "Generating Report..." : "View Detailed Report"}
+                  View Detailed Report
                 </Button>
               </div>
             )}
           </Card>
         </div>
       </div>
+
+      {/* Detailed Report Dialog */}
+      {results && (
+        <QAReportDialog
+          open={showReportDialog}
+          onOpenChange={setShowReportDialog}
+          results={results}
+        />
+      )}
     </div>
   );
 };
