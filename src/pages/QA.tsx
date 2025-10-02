@@ -15,6 +15,7 @@ const QA = () => {
   const [code, setCode] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [results, setResults] = useState<any>(null);
+  const [viewingReport, setViewingReport] = useState(false);
   const { toast } = useToast();
 
   const handleAnalyze = async () => {
@@ -32,10 +33,11 @@ const QA = () => {
     // Simulate analysis
     setTimeout(() => {
       setResults({
-        passed: 7,
-        failed: 3,
-        warnings: 2,
+        passed: 9,
+        failed: 4,
+        warnings: 3,
         checks: [
+          // Code Style Checks
           { name: "Naming Conventions", status: "pass", message: "All objects follow naming guidelines" },
           { name: "Data Types", status: "pass", message: "Appropriate data types used throughout" },
           { name: "Join Optimization", status: "fail", message: "Multiple joins could be optimized for performance" },
@@ -48,20 +50,42 @@ const QA = () => {
           { name: "Code Complexity", status: "fail", message: "Some views exceed complexity threshold" },
           { name: "Access Grants", status: "pass", message: "Access controls properly configured" },
           { name: "Model Organization", status: "pass", message: "Clean model structure maintained" },
+          
+          // Design Style Checks
+          { name: "Color Palette Compliance", status: "pass", message: "All visualizations use approved dashboard color palette" },
+          { name: "Reserved Colors Usage", status: "fail", message: "Traffic light colors not consistently applied for performance indicators" },
+          { name: "Layout Standards", status: "pass", message: "Dashboard follows newspaper layout best practices" },
+          { name: "Typography Consistency", status: "warning", message: "Font sizes vary slightly from style guide recommendations" },
         ]
       });
       setIsAnalyzing(false);
     }, 2000);
   };
 
+  const handleViewReport = () => {
+    setViewingReport(true);
+    toast({
+      title: "Generating Detailed Report",
+      description: "Preparing comprehensive analysis with recommendations...",
+    });
+    
+    setTimeout(() => {
+      toast({
+        title: "Report Ready",
+        description: "Your detailed QA report is ready for review.",
+      });
+      setViewingReport(false);
+    }, 2000);
+  };
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "pass":
-        return <CheckCircle2 className="w-5 h-5 text-success" />;
+        return <CheckCircle2 className="w-5 h-5 text-[hsl(var(--success))]" />;
       case "fail":
-        return <XCircle className="w-5 h-5 text-destructive" />;
+        return <XCircle className="w-5 h-5 text-[hsl(var(--destructive))]" />;
       case "warning":
-        return <AlertCircle className="w-5 h-5 text-warning" />;
+        return <AlertCircle className="w-5 h-5 text-[hsl(var(--warning))]" />;
       default:
         return null;
     }
@@ -70,11 +94,24 @@ const QA = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "pass":
-        return "bg-success/10 border-success/20";
+        return "bg-[hsl(var(--success))]/15 border-[hsl(var(--success))]/30";
       case "fail":
-        return "bg-destructive/10 border-destructive/20";
+        return "bg-[hsl(var(--destructive))]/15 border-[hsl(var(--destructive))]/30";
       case "warning":
-        return "bg-warning/10 border-warning/20";
+        return "bg-[hsl(var(--warning))]/15 border-[hsl(var(--warning))]/30";
+      default:
+        return "";
+    }
+  };
+
+  const getStatusTextColor = (status: string) => {
+    switch (status) {
+      case "pass":
+        return "text-[hsl(var(--success))]";
+      case "fail":
+        return "text-[hsl(var(--destructive))]";
+      case "warning":
+        return "text-[hsl(var(--warning))]";
       default:
         return "";
     }
@@ -189,17 +226,17 @@ const QA = () => {
               <div className="space-y-6">
                 {/* Summary Stats */}
                 <div className="grid grid-cols-3 gap-4">
-                  <Card className="p-4 bg-success/10 border-success/20">
-                    <div className="text-3xl font-bold text-success mb-1">{results.passed}</div>
-                    <div className="text-sm text-success-foreground">Passed</div>
+                  <Card className="p-4 bg-[hsl(var(--success))]/15 border-[hsl(var(--success))]/30">
+                    <div className="text-3xl font-bold text-[hsl(var(--success))] mb-1">{results.passed}</div>
+                    <div className="text-sm font-medium text-[hsl(var(--success))]">Passed</div>
                   </Card>
-                  <Card className="p-4 bg-destructive/10 border-destructive/20">
-                    <div className="text-3xl font-bold text-destructive mb-1">{results.failed}</div>
-                    <div className="text-sm text-destructive-foreground">Failed</div>
+                  <Card className="p-4 bg-[hsl(var(--destructive))]/15 border-[hsl(var(--destructive))]/30">
+                    <div className="text-3xl font-bold text-[hsl(var(--destructive))] mb-1">{results.failed}</div>
+                    <div className="text-sm font-medium text-[hsl(var(--destructive))]">Failed</div>
                   </Card>
-                  <Card className="p-4 bg-warning/10 border-warning/20">
-                    <div className="text-3xl font-bold text-warning mb-1">{results.warnings}</div>
-                    <div className="text-sm text-warning-foreground">Warnings</div>
+                  <Card className="p-4 bg-[hsl(var(--warning))]/15 border-[hsl(var(--warning))]/30">
+                    <div className="text-3xl font-bold text-[hsl(var(--warning))] mb-1">{results.warnings}</div>
+                    <div className="text-sm font-medium text-[hsl(var(--warning))]">Warnings</div>
                   </Card>
                 </div>
 
@@ -213,7 +250,7 @@ const QA = () => {
                       <div className="flex items-start gap-3">
                         {getStatusIcon(check.status)}
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-medium mb-1">{check.name}</h4>
+                          <h4 className={`font-semibold mb-1 ${getStatusTextColor(check.status)}`}>{check.name}</h4>
                           <p className="text-sm text-muted-foreground">{check.message}</p>
                         </div>
                       </div>
@@ -221,8 +258,13 @@ const QA = () => {
                   ))}
                 </div>
 
-                <Button variant="outline" className="w-full">
-                  View Detailed Report
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={handleViewReport}
+                  disabled={viewingReport}
+                >
+                  {viewingReport ? "Generating Report..." : "View Detailed Report"}
                 </Button>
               </div>
             )}
