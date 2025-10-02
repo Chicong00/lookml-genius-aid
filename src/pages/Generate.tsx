@@ -12,6 +12,7 @@ const Generate = () => {
   const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [hasGenerated, setHasGenerated] = useState(false);
+  const [showingInsights, setShowingInsights] = useState(false);
   const { toast } = useToast();
 
   const handleGenerate = async () => {
@@ -35,6 +36,31 @@ const Generate = () => {
         description: "Your LookML dashboard has been created successfully.",
       });
     }, 3000);
+  };
+
+  const handleGetInsights = () => {
+    setShowingInsights(true);
+    toast({
+      title: "AI Insights",
+      description: "Analyzing dashboard data and generating insights...",
+    });
+    
+    // Simulate insights generation
+    setTimeout(() => {
+      toast({
+        title: "Insights Ready",
+        description: "Revenue shows strong growth in Electronics category. Consider adding trend analysis for seasonal patterns.",
+      });
+      setShowingInsights(false);
+    }, 2000);
+  };
+
+  const handleCopyCode = () => {
+    navigator.clipboard.writeText(sampleCode);
+    toast({
+      title: "Code copied!",
+      description: "LookML code has been copied to your clipboard.",
+    });
   };
 
   const sampleCode = `dashboard: sales_overview {
@@ -216,9 +242,14 @@ const Generate = () => {
                       </div>
                     </Card>
 
-                    <Button variant="outline" className="w-full">
+                    <Button 
+                      variant="outline" 
+                      className="w-full"
+                      onClick={handleGetInsights}
+                      disabled={showingInsights}
+                    >
                       <Sparkles className="w-4 h-4 mr-2" />
-                      Get AI Insights
+                      {showingInsights ? "Analyzing..." : "Get AI Insights"}
                     </Button>
                   </div>
                 </TabsContent>
@@ -229,7 +260,11 @@ const Generate = () => {
                       <code>{sampleCode}</code>
                     </pre>
                   </Card>
-                  <Button variant="outline" className="w-full">
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={handleCopyCode}
+                  >
                     Copy Code
                   </Button>
                 </TabsContent>
